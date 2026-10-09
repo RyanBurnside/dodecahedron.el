@@ -68,7 +68,6 @@
     (6 . 18) (7 . 11) (7 . 15) (7 . 19) (8 . 10)
     (9 . 11) (12 . 14) (13 . 15) (16 . 17) (18 . 19)))
 
-
 (defvar transformed (make-vector (length dodecahedron-vertices) nil)
   "A final buffer for transformed verticies (into 2D cons cells")
 
@@ -157,34 +156,3 @@
                                   (aref dodecahedron-angles 1)
                                   (aref dodecahedron-angles 2)))
            dodecahedron-viewer))))
-
-
-
-(defun my-gaussian-random ()
-  "Generate a random float from a standard Normal distribution N(0, 1)
-using the Box-Muller transform."
-  (let ((u1 (cl-random 1.0))
-        (u2 (cl-random 1.0)))
-    ;; Prevent log(0)
-    (while (= u1 0.0)
-      (setq u1 (cl-random 1.0)))
-    (* (sqrt (* -2.0 (log u1)))
-       (cos (* 2.0 float-pi u2)))))
-
-(defun generate-sphere-sample-points (n &optional radius)
-  "Generate N uniformly distributed 3D sample points on a sphere.
-Each point is returned as a 3-element vector [X Y Z].
-If RADIUS is non-nil, scale the sphere to RADIUS (defaults to 1.0)."
-  (let ((r (or radius 1.0))
-        (points (make-vector n nil)))
-    (dotimes (i n points)
-      (let* ((x (my-gaussian-random))
-             (y (my-gaussian-random))
-             (z (my-gaussian-random))
-             ;; Calculate 3D magnitude
-             (len (sqrt (+ (* x x) (* y y) (* z z)))))
-        ;; Normalize vector and scale by radius
-        (aset points i
-              (vector (* r (/ x len))
-                      (* r (/ y len))
-                      (* r (/ z len))))))))
