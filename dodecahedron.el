@@ -61,12 +61,12 @@
   "Normalized unit-sphere vertices for a regular dodecahedron.")
 
 (defconst dodecahedron-edges
-  '((0 . 8) (0 . 12) (0 . 16) (1 . 9) (1 . 12)
+  '[(0 . 8) (0 . 12) (0 . 16) (1 . 9) (1 . 12)
     (1 . 17) (2 . 10) (2 . 13) (2 . 16) (3 . 11)
     (3 . 13) (3 . 17) (4 . 8) (4 . 14) (4 . 18)
     (5 . 9) (5 . 14) (5 . 19) (6 . 10) (6 . 15)
     (6 . 18) (7 . 11) (7 . 15) (7 . 19) (8 . 10)
-    (9 . 11) (12 . 14) (13 . 15) (16 . 17) (18 . 19)))
+    (9 . 11) (12 . 14) (13 . 15) (16 . 17) (18 . 19)])
 
 (defvar transformed (make-vector (length dodecahedron-vertices) nil)
   "A final buffer for transformed verticies (into 2D cons cells")
@@ -103,30 +103,40 @@
 (defun dodecahedron-clear (svg)
   "Destructively remove all line elements from SVG."
   ;; Remove top-level line elements directly from the DOM list
+  ;; TODO make make refs to sub lists and mutate rather than drop
   (setcdr (cdr svg)
           (cl-remove-if (lambda (child)
                           (and (listp child)
-                               (eq (car child) 'line)))
+                               (or (eq (car child) 'line)
+                                   (eq (car child) 'text))))
                         (cddr svg))))
 
 (defun dodecahedron-render (svg rx ry rz)
   "Render projected dodecahedron lines into SVG structure."
   (dodecahedron-clear svg)
   (cl-loop with scale = 120.0
-           for i from 0 
+           for i from 0
            for v across dodecahedron-vertices
-           do (aset transformed i
-                    (dodecahedron--project (dodecahedron--rotate v rx ry rz)
-                                           300 300 scale)))
-  (cl-loop  for edge in dodecahedron-edges
+           for new-pt = (dodecahedron--project
+                         (dodecahedron--rotate v rx ry rz)
+                         300 300 scale)
+           do
+           (aset transformed i new-pt))
+
+  (cl-loop  for edge across dodecahedron-edges
             for i from 0
             for p1 = (aref transformed (car edge))
             for p2 = (aref transformed (cdr edge))
-            do (svg-line svg
-                         (car p1) (cdr p1)
-                         (car p2) (cdr p2)
-                         :stroke (aref dodecahedron-palette (mod i 20))
-                         :stroke-width 2)))
+            do
+            (svg-line svg
+                      (car p1) (cdr p1)
+                      (car p2) (cdr p2)
+                      :stroke (aref dodecahedron-palette (mod i 20))
+                      :stroke-width 2))
+  (cl-loop for i from 0
+           for p across transformed
+           do
+           (svg-text svg (format " %i" i) :x (car p) :y (cdr p))))
 
 ;;; 4. Animation Control & Execution
 
