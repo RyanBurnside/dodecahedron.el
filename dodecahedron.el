@@ -1,8 +1,19 @@
-;;;; Playing with "dynamic" SVG rendering
-;;;; Note: The SVG is really just a monsterious list
-;;;; Each "shape" to be drawn is consed on via strings and lists
-;;;; Generally too slow to be truly used as some "engine"
-;;;; Ryan Burnside 2026
+;;; dodecahedron.el --- Insert a 3D dodecahedron  -*- lexical-binding:t -*-
+
+;; Copyright (C) 2026 Ryan Burnside
+
+;; Author: Ryan Burnside
+;; Version: 1.0
+;; Package-Requires: (svg cl-lib)
+
+;;; Commentary:
+;; This inserts and modifies a rotating dodecahedron into an SVG.
+;; This is not an especially efficient hack but it's fun.
+;; Remember to require it in your config file (require 'dodecahedron)
+;; dodecahedron-start begins the simulation.
+;; dodecahedron-stop stops the simulation (do this before deleting)
+
+;;; Code:
 
 (require 'svg)
 (require 'cl-lib)
@@ -151,6 +162,7 @@
   "Initialize SVG image, insert at point, and start rotation timer loop."
   (interactive)
   (dodecahedron-stop)
+  (message "Remember to run dodecahedron-stop to quit.")
   (let ((dodecahedron-viewer (svg-create 300 300 :stroke "currentColor")))
     (svg-insert-image dodecahedron-viewer)
     (setq dodecahedron-angles (vector 0.0 0.0 0.0))
@@ -166,3 +178,6 @@
                                   (aref dodecahedron-angles 1)
                                   (aref dodecahedron-angles 2)))
            dodecahedron-viewer))))
+
+(provide 'dodecahedron)
+;;; dodecahedron.el ends here
